@@ -1,7 +1,9 @@
 import { _decorator, Component, error, find, log, Node } from 'cc';
-// 引入Phantom钱包的JavaScript库
-import { PhantomWallet } from '@solana/wallet-adapter-phantom';
+import { Connection, TransactionMessage, VersionedTransaction, SystemProgram, Transaction, clusterApiUrl } from "@solana/web3.js";
+// import { aaa } from "./aaa";
 const { ccclass, property } = _decorator;
+
+
 
 @ccclass('solana_bridge')
 export class solana_bridge  extends Component{
@@ -51,24 +53,11 @@ export class solana_bridge  extends Component{
         for(let i=1;i<11;i++){
             this.players.push(this.game_id + i);
         }
-        // 创建Phantom钱包实例
-        const wallet = new PhantomWallet();
-
-        // 连接到钱包
-        await wallet.connect();
-
-        // 获取钱包地址
-        const address = wallet.publicKey.toBase58();
-        console.log('钱包地址:', address);
-
-        // 获取各种密钥
-        const publicKey = wallet.publicKey;
-        const privateKey = wallet.signer.secretKey;
-        const seed = wallet.signer.seed;
-        console.log('公钥:', publicKey);
-        console.log('私钥:', privateKey);
-        console.log('种子:', seed);
+        let keypair:any = await window.createKeypair();
+        log(keypair);
     }
+
+ 
     
     private _pharse:number = 0;
     private _queryInterval:number = 3;
@@ -166,3 +155,4 @@ export class solana_bridge  extends Component{
         return urlParams.get(parameterName);
     }
 }
+

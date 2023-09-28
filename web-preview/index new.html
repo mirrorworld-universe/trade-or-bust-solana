@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+
+    <title>Trade Or Bust</title>
+
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,minimum-scale=1,maximum-scale=1,minimal-ui=true"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="full-screen" content="yes"/>
+    <meta name="screen-orientation" content="portrait"/>
+    <meta name="x5-fullscreen" content="true"/>
+    <meta name="360-fullscreen" content="true"/>
+    
+    <meta name="renderer" content="webkit"/>
+    <meta name="force-rendering" content="webkit"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+    <link rel="icon" href="favicon.ico"/>
+  </head>
+  <body>
+    <div id="GameDiv" cc_exact_fit_screen="true" position:relative overflow:hidden>
+      <div id="Cocos3dGameContainer">
+        <canvas id="GameCanvas" width=100% height=100% tabindex="99" position:absolute left:0 top:0></canvas>
+      </div>
+    </div>
+    <!-- Polyfills bundle. -->
+<script src="src/polyfills.bundle.js" charset="utf-8"> </script>
+<!-- <script src="src/aa.js" charset="utf-8"> </script> -->
+<!-- Development (un-minified) -->
+<script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
+<script src="https://bundle.run/buffer@6.0.3"></script>
+
+<!-- Production (minified) -->
+<!-- <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script> -->
+<script>
+window.getPhantom = async () =>{
+  console.error(1212);
+  const getProvider = () => {
+      if ('phantom' in window) {
+        const provider = window.phantom?.solana;
+    
+        if (provider?.isPhantom) {
+          return provider;
+        }
+      }
+    
+      window.open('https://phantom.app/', '_blank');
+  };
+  
+  const provider = getProvider(); // see "Detecting the Provider"
+  provider.on("connect", () => console.log("connected!"));// Forget user's public key once they disconnect
+  provider.on("disconnect", () => {
+      console.log("dsconnected!")
+  });
+  provider.on('accountChanged', (publicKey) => {
+      if (publicKey) {
+        // Set new public key and continue as usual
+        console.log(`Switched to account ${publicKey.toBase58()}`);
+      } else {
+        // Attempt to reconnect to Phantom
+        provider.connect().catch((error) => {
+          // Handle connection failure
+        });
+      }
+  });
+  
+
+  // Will either automatically connect to Phantom, or do nothing.
+  provider.connect({ onlyIfTrusted: true })
+  .then(async ({publicKey}) => {
+      console.log("public key:",publicKey);
+      await sendAndSign(publicKey,provider);
+  })
+  .catch(async () => {
+      try {
+          const resp = await provider.connect();
+          console.log(resp.publicKey.toString());
+          // 26qv4GCcx98RihuK3c4T6ozB3J7L6VwCuFVc7Ta2A3Uo 
+          await sendAndSign(resp.publicKey,provider);
+      } catch (err) {
+        console.error(err);
+          // { code: 4001, message: 'User rejected the request.' }
+      }
+  });
+
+  // const provider = getProvider(); // see "Detecting the Provider"
+}
+
+var sendAndSign = async function(publicKey,provider){
+  console.log("sendAndSign enter...");
+  // const network = 'https://solana-api.projectserum.com';
+  // const network = 'mainnet-beta';
+  // create a connection to the cluster
+const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl());
+
+// get the latest blockhash
+const blockhash = await connection.getRecentBlockhash();
+  // create a transfer instruction
+  const transferInstruction = solanaWeb3.SystemProgram.transfer({
+    fromPubkey: publicKey,
+    toPubkey: publicKey,
+    lamports: 10,
+  });
+
+  // create a v0 compatible message
+  const messageV0 = new TransactionMessage({
+    payerKey: publicKey,
+    recentBlockhash: blockhash,
+    instructions: [transferInstruction],
+  }).compileToV0Message();
+
+  // make a versioned transaction
+  const transactionV0 = new VersionedTransaction(messageV0);
+
+
+
+
+  // const connection = new solanaWeb3.Connection(network);
+  const transaction = new solanaWeb3.Transaction();
+  const signResult = await provider.signAndSendTransaction(transaction);
+  let status = await connection.getSignatureStatus(signResult.signature);
+  console.log("phantom resutl:",signResult,status);
+}
+</script>
+<!-- SystemJS support. -->
+<script src="src/system.bundle.js" charset="utf-8"> </script>
+
+<!-- Import map -->
+<script src="src/import-map.json" type="systemjs-importmap" charset="utf-8"> </script>
+
+<script>
+  System.import('./index.js').catch(function(err) { console.error(err); })
+
+    function showWindowSize() {
+      var w = window.innerWidth;
+      var h = window.innerHeight;
+      document.getElementById("GameDiv").style.width = w + "px";
+      document.getElementById("GameDiv").style.height = h + "px";
+      // view.setDesignResolutionSize( w,h,ResolutionPolicy.FIXED_WIDTH);
+    }
+
+    // 给window.onresize事件绑定上面定义的函数
+    window.onresize = showWindowSize;
+
+    // 调用一次函数，显示初始的窗口大小
+    showWindowSize();
+</script>
+  </body>
+</html>

@@ -15,7 +15,10 @@
     "coordinate": "local"
   },
   "__version__": "1.0.0",
-  "builder": {},
+  "builder": {
+    "taskOptionsMap": {},
+    "__version__": "1.3.6"
+  },
   "snap-configs": {
     "position": {
       "x": 1,
@@ -74,8 +77,8 @@
     },
     "393c0e9f-c660-46a6-bd3b-cc2f5c62ac05": {
       "position": {
-        "x": 0.5,
-        "y": 0.5,
+        "x": 1.5,
+        "y": 1.5,
         "z": 5000
       },
       "rotation": {
