@@ -337,7 +337,7 @@ window.initSDK = async function(useTestAccount:boolean){
     const playerOneKeypair = Keypair.fromSecretKey(base58.decode(playerOneSecretKey))
     signingAuthorityWalletKeypair = new Keypair();
     signingAuthorityWalletKeypair = playerOneKeypair;
-    console.log("use key: ", base58.encode(playerOneSecretKey));
+    console.log("use key: ", playerOneSecretKey);
     console.log("use key address: ", signingAuthorityWalletKeypair.publicKey.toBase58());
   }
 
@@ -430,7 +430,14 @@ window.initSDK = async function(useTestAccount:boolean){
     console.error("need to set account or create account first!");
     return;
   }
+
+
   let player: PublicKey = signingAuthorityWalletKeypair.publicKey;
+  let isJoined = await tradeOrBurstLib.isPlayerJoinGame(gameUuid, player);
+  if(isJoined){
+    console.error("player ",player," is joined the game already.");
+    return;
+  }
   let tx = await tradeOrBurstLib.createJoinGameTransaction(player, player, gameUuid, x, y);
 
 
