@@ -55,6 +55,7 @@ export class lobby_controller extends Component {
     public async onJoinGameClicked(){
         ponzi_controller.instance.sendCCCMsg(ccc_msg.network_block_ui,true);
         await window.solanaJoinGame?.();
+        //todo: update IsPlayer and sync here
         ponzi_controller.instance.sendCCCMsg(ccc_msg.network_block_ui,false);
     }
 
