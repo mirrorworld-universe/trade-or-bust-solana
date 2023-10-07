@@ -38,6 +38,10 @@ export class ponzi_controller extends Component{
         this.init();
     }
 
+    update(dt: number): void {
+        
+    }
+
     public on(msgName:string,func:any){
         this.node.on(msgName,func);
     }
@@ -238,10 +242,6 @@ export class ponzi_controller extends Component{
         }
         // 打印结果
         console.log(result); // ["name", "age"]
-    }
-    
-    gameInit(game:any){
-
     }
 
     gameUpdate(oldObj:any,newObj:any) {

@@ -54,7 +54,7 @@ export class lobby_controller extends Component {
 
     public async onJoinGameClicked(){
         ponzi_controller.instance.sendCCCMsg(ccc_msg.network_block_ui,true);
-        await window.joinGame?.();
+        await window.solanaJoinGame?.();
         ponzi_controller.instance.sendCCCMsg(ccc_msg.network_block_ui,false);
     }
 
@@ -110,8 +110,8 @@ export class lobby_controller extends Component {
 
         let isPlayer:boolean = false;
         try{
-            const playerEntity = globalThis.ponzi.currentPlayer;
-            isPlayer = await window.queryValue?.(window.env.components.IsPlayer, playerEntity);
+            // const playerEntity = globalThis.ponzi.currentPlayer;
+            isPlayer = await window.solanaIsJoined?.();
         }catch{
             isPlayer = false;
         }

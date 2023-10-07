@@ -1,5 +1,6 @@
 import { _decorator, Component, error, find, log, Node } from 'cc';
 import { Connection, TransactionMessage, VersionedTransaction, SystemProgram, Transaction, clusterApiUrl } from "@solana/web3.js";
+import { component_state } from './enums/component_state';
 // import { aaa } from "./aaa";
 const { ccclass, property } = _decorator;
 
@@ -10,7 +11,7 @@ export class solana_bridge  extends Component{
 
     //Get from url
     private game_id:string;
-    private current_player:string;
+    public current_player:string;
     private players:string[];
 
     private game:any = {};
@@ -45,16 +46,32 @@ export class solana_bridge  extends Component{
         }
     }
 
-    async start() {
+    async onLoad() {
         //Use 0:00 of today as game_id
         this.game_id = this.getTodayStartTimestamp().toString();
-        this.current_player = this.game_id + this.getParameterFromURL("id");
-        this.players = [];
-        for(let i=1;i<11;i++){
-            this.players.push(this.game_id + i);
-        }
-        let keypair:any = await window.createKeypair();
-        log(keypair);
+        this.current_player = this.getParameterFromURL("id");
+        // this.players = [];
+        // for(let i=1;i<11;i++){
+        //     this.players.push(this.game_id + i);
+        // }
+
+        //InitSDK
+        await window?.initSDK(this.game_id, this.current_player);
+        //Update gameState
+        globalThis.ponzi.gameState = component_state.game_ingame;
+        globalThis.ponzi.gamestate_update?.(null, component_state.game_ingame);
+
+        //update GameData
+        let gameInfo = await window?.queryGame();
+        globalThis.ponzi.game = gameInfo;
+        globalThis.ponzi.game_update?.(null, gameInfo);
+
+        //Query all players
+        let playerIds = [1,2];
+        let playersData = await window?.solanaQueryPlayers(playerIds);
+        globalThis.ponzi.players = playersData;
+
+        //todo: add other init update here
     }
 
  
@@ -62,7 +79,7 @@ export class solana_bridge  extends Component{
     private _pharse:number = 0;
     private _queryInterval:number = 3;
     update(dt:number){
-        if(!this._inited) {
+        if(!this.inited) {
             this.init();
             return;
         }
@@ -74,13 +91,13 @@ export class solana_bridge  extends Component{
         }
     }
 
-    private _inited:boolean = false;
+    public inited:boolean = false;
     private async init(){
-        if(this._inited) return;
+        if(this.inited) return;
 
         if(this.game_id && this.current_player && this.players && this.players.length > 0){
             log("Game inited, game_id:",this.game_id,";current_player:",this.current_player,";player count:",this.players.length);
-            this._inited = true;
+            this.inited = true;
         }
     }
 

@@ -9,6 +9,7 @@ import { component_state } from '../../enums/component_state';
 import { log } from 'cc';
 import { warn } from 'cc';
 import { ponzi_config } from '../../enums/ponzi_config';
+import { solana_bridge } from '../../solana-bridge';
 const { ccclass, property } = _decorator;
 
 @ccclass('button_raisingcapital')
@@ -39,13 +40,13 @@ export class button_raisingcapital extends Component {
         const playerEntity = globalThis.ponzi.currentPlayer;
         if(!playerEntity) return;
 
-        let raiseCountdown = null;
+        let player = null;
         try{
-            raiseCountdown = await window.queryValue?.(window.env.components.RaiseColddown, playerEntity);
+            player = await window.solanaQueryPlayers?.([solana_bridge.instance.current_player]);
         }catch{
             log("Can not find RaiseColddown component on entity");
         }
-        if(!raiseCountdown) return;
+        if(!player) return;
 
         this._inited = true;
         await this.updateUI();
@@ -56,7 +57,7 @@ export class button_raisingcapital extends Component {
         const playerEntity = globalThis.ponzi.currentPlayer;
         let raiseCountdown = null;
         try{
-            raiseCountdown = await window.queryValue?.(window.env.components.RaiseColddown, playerEntity);
+            raiseCountdown = await window.solanaQueryPlayers?.([solana_bridge.instance.current_player]);
         }catch{
             log("Can not get raisecolddown component on entity");
         }
