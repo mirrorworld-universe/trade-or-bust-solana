@@ -1,4 +1,4 @@
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, log, Node } from 'cc';
 import { string_utils } from '../utils/string_utils';
 const { ccclass, property } = _decorator;
 
@@ -24,12 +24,15 @@ export class player_model extends Component {
 
 
     public init(hash:string){
+        log("try init player-model...");
         this.playerHash = hash;
         let curPlayerEntity = globalThis.ponzi.currentPlayer;
-        if(hash == string_utils.getHashFromSymbol(curPlayerEntity)){
+        if(hash == curPlayerEntity){
+            log("this is my player");
             this.sprite.active = true;
             this.spriteEnemy.active = false;
         }else{
+            log("this is not my player");
             this.sprite.active = false;
             this.spriteEnemy.active = true;
         }

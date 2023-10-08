@@ -52,7 +52,7 @@ export class right_player_list_item extends Component {
 
         this._inited = true;
 
-        this.labelName.string = string_utils.truncateString(playerEntity);
+        this.labelName.string = playerEntity;//string_utils.truncateString(playerEntity);
         
         //query self assetsList
         this.updateUI();
@@ -64,7 +64,21 @@ export class right_player_list_item extends Component {
     private async updateUI(){
         let assetsList = null;
         try{
-            assetsList = await window.queryValue?.(window.env.components.AssetsList, this.itemPlayerEntity);
+            let allPlayers = globalThis.ponzi.players;
+            for(let i=0;i<allPlayers.length;i++){
+                let p = allPlayers[i];
+                if(p.player == this.itemPlayerEntity){
+                    assetsList = {
+                        gpu:p.gpu,
+                        bitcoin:p.bitcoin,
+                        battery:p.battery,
+                        leiter:p.leiter,
+                        gold:p.gold,
+                        oil:p.oil,
+                    };
+                    break;
+                }
+            }
         }catch{
             log("Can not find AssetsList on entity");
             return;

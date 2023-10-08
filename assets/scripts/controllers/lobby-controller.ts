@@ -9,6 +9,7 @@ import { GameData } from '../models/GameData';
 import { ccc_msg } from '../enums/ccc_msg';
 import { string_utils } from '../utils/string_utils';
 import { warn } from 'cc';
+import { solana_bridge } from '../solana-bridge';
 const { ccclass, property } = _decorator;
 
 @ccclass('lobby_controller')
@@ -54,8 +55,14 @@ export class lobby_controller extends Component {
 
     public async onJoinGameClicked(){
         ponzi_controller.instance.sendCCCMsg(ccc_msg.network_block_ui,true);
-        await window.solanaJoinGame?.();
+        let x = Math.floor(Math.random()*6)+7
+        let y = Math.floor(Math.random()*6)+7
+        await window.solanaJoinGame(x,y);
         //todo: update IsPlayer and sync here
+        globalThis.ponzi.gameState = component_state.game_ingame;
+        await solana_bridge.instance.updateGame();
+        await solana_bridge.instance.updatePlayers();
+        await solana_bridge.instance.updateGameMap();
         ponzi_controller.instance.sendCCCMsg(ccc_msg.network_block_ui,false);
     }
 
@@ -103,7 +110,7 @@ export class lobby_controller extends Component {
 
     private async updateLobby(){
         const gameState = globalThis.ponzi.gameState;
-        const gameObj:GameData = globalThis.ponzi.game;
+        const gameObj:any = globalThis.ponzi.game;
         if(!gameObj){
             warn("No game obj when update lobby");
             return;
@@ -112,7 +119,7 @@ export class lobby_controller extends Component {
         let isPlayer:boolean = false;
         try{
             // const playerEntity = globalThis.ponzi.currentPlayer;
-            isPlayer = await window.solanaIsJoined?.();
+            isPlayer = await window.solanaIsJoined();
         }catch{
             isPlayer = false;
         }
@@ -120,6 +127,7 @@ export class lobby_controller extends Component {
         if(gameState == component_state.game_ingame){
             if(isPlayer){
                 log("ingame+isPlayer");
+                await solana_bridge.instance.updatePlayers();
                 this.showGameNode();
                 this.btnJoinGame.active = false;
                 this.btnTriggerGame.active = false;
@@ -145,7 +153,7 @@ export class lobby_controller extends Component {
 
                 let timeStamp:number = sys.now();
                 timeStamp = Number(timeStamp)/1000;
-                let gameStartTime:number = Number(gameObj.startTime);
+                let gameStartTime:number = Number(gameObj.gameStartedAtTimestamp);
                 let leftSeconds = Math.floor(gameStartTime - timeStamp);
                 if(leftSeconds > 0){
                     log("gameWaiting+isPlayer+notStart");

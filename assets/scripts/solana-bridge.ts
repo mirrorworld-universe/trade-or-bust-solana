@@ -30,7 +30,7 @@ export class solana_bridge  extends Component{
     private static _instance: solana_bridge;
     public static get instance(): solana_bridge {
         if (!solana_bridge._instance) {
-            solana_bridge._instance = find("solana_bridge").getComponent(solana_bridge);
+            solana_bridge._instance = find("solana-bridge").getComponent(solana_bridge);
         }
         return solana_bridge._instance;
     }
@@ -48,33 +48,67 @@ export class solana_bridge  extends Component{
 
     async onLoad() {
         //Use 0:00 of today as game_id
-        this.game_id = this.getTodayStartTimestamp().toString();
+        this.game_id = this.getParameterFromURL("gameid") || this.getTodayStartTimestamp().toString();
         this.current_player = this.getParameterFromURL("id");
         // this.players = [];
         // for(let i=1;i<11;i++){
         //     this.players.push(this.game_id + i);
         // }
+        log("game_id:",this.game_id," current player:",this.current_player);
 
         //InitSDK
+        log("start init sdk");
         await window?.initSDK(this.game_id, this.current_player);
-        //Update gameState
-        globalThis.ponzi.gameState = component_state.game_ingame;
-        globalThis.ponzi.gamestate_update?.(null, component_state.game_ingame);
 
         //update GameData
-        let gameInfo = await window?.queryGame();
-        globalThis.ponzi.game = gameInfo;
-        globalThis.ponzi.game_update?.(null, gameInfo);
-
-        //Query all players
-        let playerIds = [1,2];
-        let playersData = await window?.solanaQueryPlayers(playerIds);
-        globalThis.ponzi.players = playersData;
-
-        //todo: add other init update here
+        this.updateGame();
     }
 
- 
+    public async updateGame(){
+        log("start query game");
+        let gameInfo;
+        try {
+            gameInfo = await window?.queryGame();
+            log(" query game success");
+            globalThis.ponzi.game = gameInfo;
+            globalThis.ponzi.game_update?.(null, gameInfo);
+            //Update gameState
+            globalThis.ponzi.gameState = component_state.game_ingame;
+            globalThis.ponzi.gamestate_update?.(null, component_state.game_ingame);
+
+            await solana_bridge.instance.updateGameMap();
+            
+        } catch (error) {
+            log(" query game failed",error);
+            globalThis.ponzi.game = 1;
+            //Update gameState
+            globalThis.ponzi.gameState = component_state.game_waiting;
+            globalThis.ponzi.gamestate_update?.(null, component_state.game_waiting);
+        }
+    }
+
+    public async updateGameMap(){
+        if(globalThis.ponzi.gameMap){
+            log("GameMap is already seted");
+            return;
+        }
+
+        globalThis.ponzi.gameMap = {
+            width:20,
+            height:20,
+            mapArray:[]
+        }
+    }
+
+    public async updatePlayers(){
+        //Query all players
+        log("start query all players' info");
+        let playerIds = [1,2];
+        let playersData = await window?.solanaQueryPlayers(playerIds);
+        log("finish query all players' info:",playersData);
+
+        globalThis.ponzi.players = playersData;
+    }
     
     private _pharse:number = 0;
     private _queryInterval:number = 3;

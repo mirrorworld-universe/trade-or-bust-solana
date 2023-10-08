@@ -58,9 +58,10 @@ export class map_controller extends Component {
         if(gameState != component_state.game_ingame) return;
 
         let map = globalThis.ponzi.gameMap?.mapArray;
+        log("try init map controller",gameState,globalThis.ponzi.gameMap);
         if(!map) return;
-        let items = window.getMapItems?.();
-        if(!items) return;
+        // let items = window.getMapItems?.();
+        // if(!items) return;
         
         this.tmpCoorArray = null;
 
@@ -147,7 +148,7 @@ export class map_controller extends Component {
 
     // private 
     private drawPlayers(){
-        let players = window.getPlayers?.();
+        let players = globalThis.ponzi.players;
         if(!players){
             return;
         }
@@ -155,28 +156,19 @@ export class map_controller extends Component {
         let array = {};
         for (let key in players) {
             let map = players[key];
-            for (let [entity, value] of map) {
-                //   console.log(key, entity, value);
-                let hash = string_utils.getHashFromSymbol(entity);
-                if(!array[hash]){
-                    array[hash] = new RoleLocalObj();
-                }
-                let obj:RoleLocalObj = array[hash];
-                array[hash] = obj;
-                if(key == 'x'){
-                    let valueNum = Number(value);
-                    obj.row = valueNum;
-                }else if(key == 'y'){
-                    let valueNum = Number(value);
-                    obj.col = valueNum;
-                }else if(key == 'money'){
-                    let valueNum = Number(value);
-                    obj.money = valueNum;
-                }
+            let hash = map.player;
+
+            if(!array[hash]){
+                array[hash] = new RoleLocalObj();
             }
+            let obj:RoleLocalObj = array[hash];
+            array[hash] = obj;
+                obj.row = map.y.toNumber();
+                obj.col = map.x.toNumber();
+                obj.money = map.money.toNumber();
         }
 
-        // log("role array:",array);
+        log("Try to draw players ,role array:",array);
         const self = this;
         self.playerParent.removeAllChildren();
 
@@ -188,6 +180,7 @@ export class map_controller extends Component {
             newNode.active = true;
 
             let pos:HexMapTile = self.tmpCoorArray[value.row][value.col];
+            log("player pos:",pos);
             newNode.position = new Vec3(pos.x,pos.y,0);
 
             let script:player_model = newNode.getComponent(player_model);
@@ -257,21 +250,15 @@ export class map_controller extends Component {
 
         //check player
         let nowRoleObj:RoleLocalObj = new RoleLocalObj();
-        let players = window.getPlayers?.();
+        let players = globalThis.ponzi.players;
+
         for (let key in players) {
             let map = players[key];
-            for (let [entity, value] of map) {
-                //   console.log(key, entity, value);
-                let hash = string_utils.getHashFromSymbol(entity);
-                if(hash != globalThis.ponzi.currentPlayer) continue;
-
-                if(key == 'x'){
-                    let valueNum = Number(value);
-                    nowRoleObj.row = valueNum;
-                }else if(key == 'y'){
-                    let valueNum = Number(value);
-                    nowRoleObj.col = valueNum;
-                }
+            let hash = map.player;
+            if(hash == globalThis.ponzi.currentPlayer){
+                nowRoleObj.row = map.y.toNumber();
+                nowRoleObj.col = map.x.toNumber();
+                break
             }
         }
 
@@ -316,7 +303,7 @@ export class map_controller extends Component {
     private isSurround(surround:RowCol[],targetRow,targetCol):boolean{
         if(!surround) return false;
 
-        log("cell start");
+        // log("cell start");
         for(let i=0;i<surround.length;i++){
             let rc = surround[i];
             if(rc.row == targetRow && rc.col == targetCol) return true;
