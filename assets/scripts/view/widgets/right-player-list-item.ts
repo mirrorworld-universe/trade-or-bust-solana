@@ -102,7 +102,7 @@ export class right_player_list_item extends Component {
     private _registerListeners(){
         const self = this;
         ponzi_controller.instance.on(ccc_msg.on_assetslist_update,async (update)=>{
-            const [nextValue, prevValue] = update.value;
+            // const [nextValue, prevValue] = update.value;
             if(self.itemPlayerEntity != update.entity) return;
             await self.updateUI();
         })

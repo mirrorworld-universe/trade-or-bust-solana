@@ -10,6 +10,7 @@ import { log } from 'cc';
 import { warn } from 'cc';
 import { ponzi_config } from '../../enums/ponzi_config';
 import { solana_bridge } from '../../solana-bridge';
+import { RoleLocalObj } from '../data/RoleLocalObj';
 const { ccclass, property } = _decorator;
 
 @ccclass('button_raisingcapital')
@@ -25,7 +26,7 @@ export class button_raisingcapital extends Component {
     }
 
     async update(deltaTime: number) {
-        // if(!this._inited) await this.init();
+        if(!this._inited) await this.init();
     }
 
     public async onBtnClicked(){
@@ -40,9 +41,25 @@ export class button_raisingcapital extends Component {
         const playerEntity = globalThis.ponzi.currentPlayer;
         if(!playerEntity) return;
 
+        if(!globalThis.ponzi.players) return;
+
         let player = null;
         try{
-            player = await window.solanaQueryPlayers([solana_bridge.instance.current_player]);
+            let array = {};
+            for (let key in globalThis.ponzi.players) {
+                let map = globalThis.ponzi.players[key];
+                let hash = map.player;
+
+                if(!array[hash]){
+                    array[hash] = new RoleLocalObj();
+                }
+                let obj:RoleLocalObj = array[hash];
+                array[hash] = obj;
+                    obj.row = map.y.toNumber();
+                    obj.col = map.x.toNumber();
+                    obj.money = map.money.toNumber();
+            }
+            player = array[playerEntity];
         }catch{
             log("Can not find RaiseColddown component on entity");
         }
@@ -54,19 +71,38 @@ export class button_raisingcapital extends Component {
     }
 
     private async updateUI(){
-        return;
         console.error("raise updateUI");
-        // const playerEntity = globalThis.ponzi.currentPlayer;
+        const playerEntity = globalThis.ponzi.currentPlayer;
+        
+
+        let player = null;
+        try{
+            let array = {};
+            for (let key in globalThis.ponzi.players) {
+                let map = globalThis.ponzi.players[key];
+                let hash = map.player;
+
+                if(!array[hash]){
+                    array[hash] = map;
+                }
+            }
+            player = array[playerEntity];
+        }catch{
+            log("Can not find RaiseColddown component on entity");
+        }
+        if(!player) return;
+
+
         let raiseCountdown = null;
         try{
-            raiseCountdown = await window.solanaQueryPlayers?.([solana_bridge.instance.current_player]);
+            raiseCountdown = player;
         }catch{
             log("Can not get raisecolddown component on entity");
         }
         if(!raiseCountdown) return;
         
         let timeStamp:number = sys.now()/1000;
-        let useableTime:number = Number(raiseCountdown.end);
+        let useableTime:number = Number(raiseCountdown.coolDownEndedAtTimestamp.toNumber());
         warn("btn_raise:",timeStamp,useableTime);
         if(useableTime < timeStamp){
             this.label.string = "Capital Raise";
@@ -75,8 +111,8 @@ export class button_raisingcapital extends Component {
             this.label.node.active = true;
             this.button.interactable = false;
             this.leftTime = useableTime - timeStamp;
-            this.startTime = Number(raiseCountdown.start);
-            this.endTime = Number(raiseCountdown.end);
+            this.startTime = Number(raiseCountdown.coolDownStartedAtTimestamp.toNumber());
+            this.endTime = Number(raiseCountdown.coolDownEndedAtTimestamp.toNumber());
 
             this.startCountDownAnimation();
         }

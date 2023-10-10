@@ -56,7 +56,32 @@ export class pick_asset extends Component {
 
         ponzi_controller.instance.sendCCCMsg(ccc_msg.network_block_ui,true);
         try{
-            await window.pickAsset?.(this.pickAsset);
+            await window.solanaPickAsset(this.pickAsset);
+            await this.delay(4000);
+            let assetsList = null;
+            let allPlayers = globalThis.ponzi.players;
+            for(let i=0;i<allPlayers.length;i++){
+                let p = allPlayers[i];
+                if(p.player == globalThis.ponzi.currentPlayer){
+                    assetsList = {
+                        gpu:p.gpu,
+                        bitcoin:p.bitcoin,
+                        battery:p.battery,
+                        leiter:p.leiter,
+                        gold:p.gold,
+                        oil:p.oil,
+                    };
+                    break;
+                }
+            }
+            
+            if(!assetsList){
+                log("Can not find AssetsList on entity");
+                let aaa = null;
+                aaa.aaa = 1;
+            }else{
+                ponzi_controller.instance.sendCCCMsg(ccc_msg.on_assetslist_update,{entity:globalThis.ponzi.currentPlayer});
+            }
         }catch{
             ponzi_controller.instance.sendCCCMsg(ccc_msg.single_button_dialog,{content:"pick failed",btnText:"OK"});
         }finally{
@@ -65,5 +90,11 @@ export class pick_asset extends Component {
             ponzi_controller.instance.sendCCCMsg(ccc_msg.show_pick_fund,true);
         }
     }
+
+     delay(ms: number): Promise<void> {
+        return new Promise((resolve) => {
+          setTimeout(resolve, ms);
+        });
+      }
 }
 
