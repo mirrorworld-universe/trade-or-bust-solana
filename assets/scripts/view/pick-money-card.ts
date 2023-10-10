@@ -3,6 +3,7 @@ import { fond_card } from './widgets/fond_card';
 import { ponzi_controller } from '../ponzi-controller';
 import { ccc_msg } from '../enums/ccc_msg';
 import { log } from 'cc';
+import { solana_bridge } from '../solana-bridge';
 const { ccclass, property } = _decorator;
 
 @ccclass('pick_money_card')
@@ -35,7 +36,8 @@ export class pick_money_card extends Component {
 
     public async onButtonClicked(){
         ponzi_controller.instance.sendCCCMsg(ccc_msg.network_block_ui,true);
-        await window.pickFund?.();
+        await window.solanaPickFund();
+        await solana_bridge.instance.updatePlayerObj();
         ponzi_controller.instance.sendCCCMsg(ccc_msg.network_block_ui,false);
         this.node.active = false;
     }

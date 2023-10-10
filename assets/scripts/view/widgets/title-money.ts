@@ -3,6 +3,7 @@ import { _decorator, Component, Node } from 'cc';
 import { PlayerData } from '../../models/PlayerData';
 import { ponzi_controller } from '../../ponzi-controller';
 import { ccc_msg } from '../../enums/ccc_msg';
+import { solana_bridge } from '../../solana-bridge';
 const { ccclass, property } = _decorator;
 
 @ccclass('title_money')
@@ -25,10 +26,10 @@ export class title_money extends Component {
         if(!playerEntity) return;
 
         this._inited = true;
-        let currentPlayer:PlayerData = null;
+        let currentPlayer = null;
         try{
-            currentPlayer = await window.queryValue?.(window.env.components.Player, playerEntity);
-            this.moneyLabel.string = this.getBalanceString(currentPlayer);
+            currentPlayer = solana_bridge.instance.queryPlayer(playerEntity);
+            this.moneyLabel.string = this.getBalanceString(currentPlayer.money.toNumber());
         }catch{
             currentPlayer = null;
         }

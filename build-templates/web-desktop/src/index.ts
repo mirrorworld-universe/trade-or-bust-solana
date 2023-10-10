@@ -535,7 +535,7 @@ window.initSDK = async function(gameUuid:string, useTestAccount:number){
 
 
 
-(window as any).solanaPickFund = async function(signer: Keypair) {
+(window as any).solanaPickFund = async function() {
   console.log("Started pickFund");
   if(!window.gameUuid){
     console.error("SDK not inited!");
@@ -546,7 +546,7 @@ window.initSDK = async function(gameUuid:string, useTestAccount:number){
 
   await tradeOrBurstLib.addFeePayerAndRecentBlockHashInTransaction(tx, player);
 
-  tradeOrBurstLib.signTransaction(tx, base58.encode(signer.secretKey));
+  tradeOrBurstLib.signTransaction(tx, base58.encode(window.playerOneKeypair.secretKey));
 
   let txHash = await connection.sendRawTransaction(tx.serialize());
   console.log("Tx Hash: ", txHash);

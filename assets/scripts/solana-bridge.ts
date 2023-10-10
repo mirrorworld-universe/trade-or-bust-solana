@@ -150,9 +150,27 @@ export class solana_bridge  extends Component{
         this.queryFromChain(["player_id_xxx1","player_id_xxx2","player_id_xxx3"]);
         //todo:...
     }
+
+    public queryPlayer(playerKey:string){
+        if(!globalThis.ponzi.players){
+            console.error("game not inited!");
+            return null;
+        }
+        let array = {};
+        for (let key in globalThis.ponzi.players) {
+            let map = globalThis.ponzi.players[key];
+            let hash = map.player;
+
+            if(playerKey == hash) return map;
+        }
+    }
     
     public async move_player(x:number, y:number){
         await window.solanaMovePlayer(x,y);
+        await this.updatePlayerObj();
+    }
+
+    public async updatePlayerObj(){
         let array = {};
         for (let key in globalThis.ponzi.players) {
             let map = globalThis.ponzi.players[key];
@@ -168,7 +186,7 @@ export class solana_bridge  extends Component{
                 obj.money = map.money.toNumber();
         }
         let old = array[globalThis.ponzi.currentPlayer]
-        let oldObj = {x:old.row,y:old.col}
+        let oldObj = {x:old.row,y:old.col,money:old.money}
         await this.updatePlayers();
 
 
@@ -186,7 +204,8 @@ export class solana_bridge  extends Component{
                 obj.money = map.money.toNumber();
         }
         let newa = array[globalThis.ponzi.currentPlayer]
-        let newObj = {x:newa.row,y:newa.col};
+        let newObj = {x:newa.row,y:newa.col,money:newa.money};
+
         ponzi_controller.instance.sendCCCMsg(ccc_msg.on_player_update,
             {entity:globalThis.ponzi.currentPlayer,oldObj,newObj});
     }
