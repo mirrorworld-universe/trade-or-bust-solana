@@ -8,6 +8,7 @@ import { warn } from 'cc';
 import { data_center } from '../models/data_center';
 import { RowCol } from './data/RowCol';
 import { coor_utils } from '../utils/coor_utils';
+import { solana_bridge } from '../solana-bridge';
 const { ccclass, property } = _decorator;
 
 @ccclass('mapblock')
@@ -55,12 +56,9 @@ export class mapblock extends Component {
         log("click block:",this.mapTile.row,this.mapTile.col);
         ponzi_controller.instance.sendCCCMsg(ccc_msg.network_block_ui,true);
         try{
-            await window.move?.(self.mapTile.row,self.mapTile.col);
-            self.updateMapWalkRecord(this.mapTile.row,this.mapTile.col);
-            // console.warn("Role walk record save:",self.mapTile);
-            // self.updateMapWalkRecord(self.mapTile.row,self.mapTile.col);
-            // ponzi_controller.instance.sendCCCMsg(ccc_msg.on_gamemap_walkrecord_update,null);
-            // ponzi_controller.instance.sendCCCMsg(ccc_msg.on_mapitem_update,null);
+            await solana_bridge.instance.move_player(self.mapTile.col,self.mapTile.row);
+            // await window.move?.(self.mapTile.row,self.mapTile.col);
+            // self.updateMapWalkRecord(this.mapTile.row,this.mapTile.col);
         }catch{
             ponzi_controller.instance.sendCCCMsg(ccc_msg.single_button_dialog,{content:"You can't go there",btnText:"OK"});
         }

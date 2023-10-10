@@ -1,6 +1,9 @@
 import { _decorator, Component, error, find, log, Node } from 'cc';
 import { Connection, TransactionMessage, VersionedTransaction, SystemProgram, Transaction, clusterApiUrl } from "@solana/web3.js";
 import { component_state } from './enums/component_state';
+import { ponzi_controller } from './ponzi-controller';
+import { ccc_msg } from './enums/ccc_msg';
+import { RoleLocalObj } from './view/data/RoleLocalObj';
 // import { aaa } from "./aaa";
 const { ccclass, property } = _decorator;
 
@@ -106,10 +109,16 @@ export class solana_bridge  extends Component{
         let playerIds = [1,2];
         let playersData = await window?.solanaQueryPlayers(playerIds);
         log("finish query all players' info:",playersData);
+        await this.delay(4000);
+        log("wait 4 seconds");
 
         globalThis.ponzi.players = playersData;
     }
-    
+     delay(ms: number): Promise<void> {
+        return new Promise((resolve) => {
+          setTimeout(resolve, ms);
+        });
+      }
     private _pharse:number = 0;
     private _queryInterval:number = 3;
     update(dt:number){
@@ -142,9 +151,44 @@ export class solana_bridge  extends Component{
         //todo:...
     }
     
-    public move_player(player_id:string, x:number, y:number){
-        //todo: send move to chain
-        //todo: query Player of player_id
+    public async move_player(x:number, y:number){
+        await window.solanaMovePlayer(x,y);
+        let array = {};
+        for (let key in globalThis.ponzi.players) {
+            let map = globalThis.ponzi.players[key];
+            let hash = map.player;
+
+            if(!array[hash]){
+                array[hash] = new RoleLocalObj();
+            }
+            let obj:RoleLocalObj = array[hash];
+            array[hash] = obj;
+                obj.row = map.y.toNumber();
+                obj.col = map.x.toNumber();
+                obj.money = map.money.toNumber();
+        }
+        let old = array[globalThis.ponzi.currentPlayer]
+        let oldObj = {x:old.row,y:old.col}
+        await this.updatePlayers();
+
+
+        for (let key in globalThis.ponzi.players) {
+            let map = globalThis.ponzi.players[key];
+            let hash = map.player;
+
+            if(!array[hash]){
+                array[hash] = new RoleLocalObj();
+            }
+            let obj:RoleLocalObj = array[hash];
+            array[hash] = obj;
+                obj.row = map.y.toNumber();
+                obj.col = map.x.toNumber();
+                obj.money = map.money.toNumber();
+        }
+        let newa = array[globalThis.ponzi.currentPlayer]
+        let newObj = {x:newa.row,y:newa.col};
+        ponzi_controller.instance.sendCCCMsg(ccc_msg.on_player_update,
+            {entity:globalThis.ponzi.currentPlayer,oldObj,newObj});
     }
 
     public accept_trade(player_id:string, trade_id:string){

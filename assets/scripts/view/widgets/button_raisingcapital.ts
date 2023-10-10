@@ -25,7 +25,7 @@ export class button_raisingcapital extends Component {
     }
 
     async update(deltaTime: number) {
-        if(!this._inited) await this.init();
+        // if(!this._inited) await this.init();
     }
 
     public async onBtnClicked(){
@@ -42,7 +42,7 @@ export class button_raisingcapital extends Component {
 
         let player = null;
         try{
-            player = await window.solanaQueryPlayers?.([solana_bridge.instance.current_player]);
+            player = await window.solanaQueryPlayers([solana_bridge.instance.current_player]);
         }catch{
             log("Can not find RaiseColddown component on entity");
         }
@@ -54,7 +54,9 @@ export class button_raisingcapital extends Component {
     }
 
     private async updateUI(){
-        const playerEntity = globalThis.ponzi.currentPlayer;
+        return;
+        console.error("raise updateUI");
+        // const playerEntity = globalThis.ponzi.currentPlayer;
         let raiseCountdown = null;
         try{
             raiseCountdown = await window.solanaQueryPlayers?.([solana_bridge.instance.current_player]);
@@ -82,8 +84,8 @@ export class button_raisingcapital extends Component {
 
     private _registerListeners(){
         const self = this;
-        ponzi_controller.instance.on(ccc_msg.on_raisecolddown_update,(update:any)=>{
-            self.updateUI();
+        ponzi_controller.instance.on(ccc_msg.on_raisecolddown_update,async (update:any)=>{
+            await self.updateUI();
         })
     }
 
@@ -103,8 +105,8 @@ export class button_raisingcapital extends Component {
 
         clearTimeout(this.timer);
         log("Start a timer within",this.leftTime);
-        this.timer = setTimeout(()=>{
-            self.updateUI();
+        this.timer = setTimeout(async ()=>{
+            await self.updateUI();
             self.unschedule(self.minuesTimeLabel);
         },this.leftTime*1000);
     }
