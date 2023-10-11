@@ -1,4 +1,4 @@
-import { Label } from 'cc';
+import { Label, log } from 'cc';
 import { _decorator, Component, Node } from 'cc';
 import { GameData } from '../../models/GameData';
 import { time_utils } from '../../utils/time_utils';
@@ -49,11 +49,12 @@ export class game_countdown extends Component {
     }
 
     private _updateLabel(){
-        const gameObj:GameData = globalThis.ponzi.game;
+        const gameObj:any = globalThis.ponzi.game;
         if(!gameObj) return;
 
-        let startTime:number = Number(gameObj.startTime);
-        let endTime:number = Number(gameObj.endTime);
+        let startTime:number = Number(gameObj.gameStartedAtTimestamp.toNumber());
+        let endTime:number = Number(gameObj.gameEndedAtTimestamp.toNumber());
+        log("startTime:",startTime," endTime",endTime);
         let nowTime:number = sys.now()/1000;
 
         let str:string = time_utils.calculateRemainingTime(nowTime,endTime,startTime,ponzi_config.fakeBlockTime);

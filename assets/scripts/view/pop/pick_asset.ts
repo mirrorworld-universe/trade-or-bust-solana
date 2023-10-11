@@ -62,7 +62,7 @@ export class pick_asset extends Component {
             let allPlayers = globalThis.ponzi.players;
             for(let i=0;i<allPlayers.length;i++){
                 let p = allPlayers[i];
-                if(p.player == globalThis.ponzi.currentPlayer){
+                if(p.player.toBase58() == globalThis.ponzi.currentPlayer){
                     assetsList = {
                         gpu:p.gpu,
                         bitcoin:p.bitcoin,

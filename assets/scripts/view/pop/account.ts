@@ -28,7 +28,7 @@ export class account extends Component {
 
     public onExploreClicked(){
         let playerEntity = string_utils.removeLeadingZeros(globalThis.ponzi.currentPlayer);
-        let urlPre = "https://explorer.testnet-chain.linfra.xyz/address/" + playerEntity;
+        let urlPre = "https://solscan.io/account/" + globalThis.ponzi.currentPlayer;
         sys.openURL(urlPre);
     }
 }
